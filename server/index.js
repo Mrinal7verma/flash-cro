@@ -49,7 +49,9 @@ const JobSchema = new mongoose.Schema({
 const JobModel = mongoose.model('Job', JobSchema);
 
 // Redis Connection
-const connection = new IORedis({ maxRetriesPerRequest: null });
+const connection = process.env.REDIS_URL 
+    ? new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null })
+    : new IORedis({ maxRetriesPerRequest: null });
 
 // BullMQ
 const croQueue = new Queue('cro-jobs', { connection });

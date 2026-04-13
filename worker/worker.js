@@ -6,7 +6,10 @@ const https = require('https');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
-const connection = new IORedis({ maxRetriesPerRequest: null });
+const connection = process.env.REDIS_URL 
+    ? new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null })
+    : new IORedis({ maxRetriesPerRequest: null });
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const worker = new Worker('cro-jobs', async (job) => {
