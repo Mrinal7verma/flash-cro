@@ -179,4 +179,4 @@ server.listen(PORT, () => {
 });
 
 // Run Worker Side-by-Side to bypass Render paid requirement
-require('../worker/worker.js');
+require('./worker.js');
