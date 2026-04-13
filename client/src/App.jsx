@@ -3,7 +3,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { Send, Sparkles, Globe, Zap, CheckCircle2, Terminal, ExternalLink, Activity } from 'lucide-react';
 
-const socket = io('http://localhost:5001');
+const socket = io('https://flash-cro-backend.onrender.com');
 
 function App() {
   const [url, setUrl] = useState('');
@@ -15,7 +15,7 @@ function App() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get('http://localhost:5001/api/history');
+        const res = await axios.get('https://flash-cro-backend.onrender.com/api/history');
         const formattedHistory = res.data.map(job => ({
           id: job.jobId,
           url: job.url,
@@ -56,7 +56,7 @@ function App() {
     
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5001/api/personalize', {
+      const response = await axios.post('https://flash-cro-backend.onrender.com/api/personalize', {
         url,
         adCreative: adText
       });
