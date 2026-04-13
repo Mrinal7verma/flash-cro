@@ -177,3 +177,6 @@ app.get('/api/history', async (req, res) => {
 server.listen(PORT, () => {
     console.log(`🚀 Advanced Dispatch Server is running on port ${PORT}`);
 });
+
+// Run Worker Side-by-Side to bypass Render paid requirement
+require('../worker/worker.js');
