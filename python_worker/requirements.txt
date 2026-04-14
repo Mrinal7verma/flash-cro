@@ -1,0 +1,6 @@
+bullmq
+playwright
+google-genai
+pymongo
+python-dotenv
+beautifulsoup4
