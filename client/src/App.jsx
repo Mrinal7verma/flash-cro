@@ -249,7 +249,7 @@ function App() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm font-black text-white uppercase tracking-tight">Job {String(job.id).substring(0,8)}</p>
+                          <p className="text-sm font-black text-white uppercase tracking-tight">Job {history.length - i}</p>
                           <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider
                             ${job.status === 'completed' ? 'bg-green-500/20 text-green-300' : 
                               job.status === 'active' ? 'bg-blue-500/20 text-blue-300' : 
