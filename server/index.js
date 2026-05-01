@@ -40,6 +40,7 @@ if (process.env.MONGO_URI && process.env.DATABASE_PASSWORD) {
 
 const JobSchema = new mongoose.Schema({
     jobId: String,
+    sessionId: String,
     url: String,
     adCreative: String,
     status: String,
@@ -49,7 +50,7 @@ const JobSchema = new mongoose.Schema({
 const JobModel = mongoose.model('Job', JobSchema);
 
 // Redis Connection
-const connection = process.env.REDIS_URL 
+const connection = process.env.REDIS_URL
     ? new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null })
     : new IORedis({ maxRetriesPerRequest: null });
 
@@ -115,9 +116,10 @@ queueEvents.on('active', ({ jobId }) => {
 
 // Main Endpoint with RateLimiter Middleware
 app.post('/api/personalize', rateLimiter, async (req, res) => {
-    const { url, adCreative } = req.body;
+    const { url, adCreative, sessionId } = req.body;
 
     if (!url) return res.status(400).json({ error: "URL is required" });
+    if (!sessionId) return res.status(400).json({ error: "Session ID is required for isolation" });
 
     console.log(`\n📥 Received request to personalize: ${url}`);
 
@@ -131,7 +133,7 @@ app.post('/api/personalize', rateLimiter, async (req, res) => {
         const cachedJobId = `cached-${Date.now()}`;
 
         if (process.env.MONGO_URI) {
-            await JobModel.create({ jobId: cachedJobId, url, adCreative, status: 'completed', htmlResult: parsedCache.html });
+            await JobModel.create({ jobId: cachedJobId, sessionId, url, adCreative, status: 'completed', htmlResult: parsedCache.html });
         }
 
         return res.json({
@@ -145,11 +147,12 @@ app.post('/api/personalize', rateLimiter, async (req, res) => {
     // Add to Queue
     const job = await croQueue.add('process-landing-page', {
         url: url,
-        adCreative: adCreative || "No ad provided yet"
+        adCreative: adCreative || "No ad provided yet",
+        sessionId: sessionId
     });
 
     if (process.env.MONGO_URI) {
-        await JobModel.create({ jobId: job.id, url, adCreative, status: 'waiting' });
+        await JobModel.create({ jobId: job.id, sessionId, url, adCreative, status: 'waiting' });
     }
 
     console.log(`🎫 Job sent to Worker! ID: ${job.id}`);
@@ -169,7 +172,10 @@ app.get('/api/jobs/:id', async (req, res) => {
 app.get('/api/history', async (req, res) => {
     try {
         if (!process.env.MONGO_URI) return res.json([]);
-        const jobs = await JobModel.find().sort({ createdAt: -1 }).limit(50);
+        const { sessionId } = req.query;
+        if (!sessionId) return res.json([]); // Return empty if no session provided
+        
+        const jobs = await JobModel.find({ sessionId }).sort({ createdAt: -1 }).limit(50);
         res.json(jobs);
     } catch (err) { res.status(500).json({ error: "Server error" }); }
 });

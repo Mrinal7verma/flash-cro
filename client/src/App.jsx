@@ -11,11 +11,21 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
 
+  // Generate or retrieve persistent session ID for isolated history
+  const [sessionId] = useState(() => {
+    let id = localStorage.getItem('flash_cro_session');
+    if (!id) {
+      id = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('flash_cro_session', id);
+    }
+    return id;
+  });
+
   // Fetch permanent history from MongoDB on load
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get('https://flash-cro-backend.onrender.com/api/history');
+        const res = await axios.get(`https://flash-cro-backend.onrender.com/api/history?sessionId=${sessionId}`);
         const formattedHistory = res.data.map(job => ({
           id: job.jobId,
           url: job.url,
@@ -58,7 +68,8 @@ function App() {
     try {
       const response = await axios.post('https://flash-cro-backend.onrender.com/api/personalize', {
         url,
-        adCreative: adText
+        adCreative: adText,
+        sessionId
       });
 
       const newJob = {

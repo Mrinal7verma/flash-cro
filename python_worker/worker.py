@@ -42,6 +42,7 @@ async def process_job(job, job_token):
     data = job.data
     url = data.get('url')
     adCreative = data.get('adCreative')
+    sessionId = data.get('sessionId')
     
     print(f"\n🚀 [Python Supervisor] Detected new Job {job.id} for {url} Targeting: {adCreative}")
 
@@ -101,6 +102,7 @@ async def process_job(job, job_token):
     # ==============================================================
     doc = {
         "jobId": "py_" + str(job.id),
+        "sessionId": sessionId,
         "url": url,
         "adCreative": adCreative,
         "status": "completed",
